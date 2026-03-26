@@ -51,7 +51,7 @@ outputting results to PostgreSQL, Excel, and SAP-compatible ERP flat files.
 
 **Tech:** Python · PostgreSQL · Prophet · Streamlit · Plotly · SAP MM · pandas · openpyxl
 
-🌐 **Live Dashboard:** [Streamlit App](https://your-app-link.streamlit.app)
+🌐 **Live Dashboard →** [Streamlit App](https://hari-warehouse-p2.streamlit.app)
 
 → [View Project 2 README](project2-forecasting/README.md)
 

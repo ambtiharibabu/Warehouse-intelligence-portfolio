@@ -6,7 +6,8 @@
 > reorder parameters using EOQ modelling, and surfaces Lean waste — outputting
 > results back to the database and as SAP-compatible ERP flat files."*
 
-**Live Dashboard →** [Streamlit App](https://your-app-link.streamlit.app)
+🌐 **Live Dashboard:** [Streamlit App](https://hari-warehouse-p2.streamlit.app)
+
 *(Requires active database connection — if you see a connection error,
 the DigitalOcean Droplet may be offline. See screenshots below for a
 full walkthrough.)*
