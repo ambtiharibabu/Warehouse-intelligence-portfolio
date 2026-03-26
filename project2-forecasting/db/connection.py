@@ -4,13 +4,8 @@ connection.py
 Shared database connection utility for all Project 2 modules.
 
 Works in two environments automatically:
-    Local development  → reads credentials from .env file
-    Streamlit Cloud    → reads credentials from st.secrets (Streamlit's
-                         built-in secrets manager — no .env needed)
-
-Usage in any module:
-    from db.connection import get_engine
-    engine = get_engine()
+    Streamlit Cloud    → reads from st.secrets["database"]
+    Local development  → reads from .env file via python-dotenv
 """
 
 import os
@@ -21,42 +16,53 @@ from sqlalchemy.engine import URL
 def get_engine():
     """
     Builds and returns a SQLAlchemy engine.
-
-    Credential resolution order:
-        1. Streamlit st.secrets — used when running on Streamlit Cloud
-        2. Environment variables — used locally via python-dotenv
+    Tries Streamlit secrets first, falls back to .env for local use.
     """
 
-    # ── Try Streamlit secrets first (Streamlit Cloud environment) ────────
-    # st is only imported here — not at the top of the file — because this
-    # module is also used by main.py, seeder, and other scripts that run
-    # outside Streamlit. Importing st at the top would cause errors there.
+    # ── Try Streamlit secrets first ───────────────────────────────────────
+    # We check for the secrets key explicitly rather than wrapping the
+    # entire block in try/except — this way real errors still surface.
     try:
         import streamlit as st
-        creds = st.secrets["database"]
-        return create_engine(URL.create(
-            drivername = "postgresql+psycopg2",
-            username   = creds["DB_USER"],
-            password   = creds["DB_PASSWORD"],
-            host       = creds["DB_HOST"],
-            port       = int(creds["DB_PORT"]),
-            database   = creds["DB_NAME"],
-        ))
+        # hasattr check prevents AttributeError if st.secrets isn't available
+        if hasattr(st, "secrets") and "database" in st.secrets:
+            creds = st.secrets["database"]
+            return create_engine(URL.create(
+                drivername = "postgresql+psycopg2",
+                username   = str(creds["DB_USER"]),
+                password   = str(creds["DB_PASSWORD"]),
+                host       = str(creds["DB_HOST"]),
+                port       = int(creds["DB_PORT"]),
+                database   = str(creds["DB_NAME"]),
+            ))
     except Exception:
-        # Not running in Streamlit Cloud — fall through to .env
+        # st not available (running outside Streamlit) — fall through to .env
         pass
 
     # ── Fall back to .env file (local development) ────────────────────────
     from dotenv import load_dotenv
     load_dotenv()
 
+    host     = os.getenv("DB_HOST")
+    port     = os.getenv("DB_PORT")
+    name     = os.getenv("DB_NAME")
+    user     = os.getenv("DB_USER")
+    password = os.getenv("DB_PASSWORD")
+
+    # Fail with a clear message if credentials are missing
+    if not all([host, port, name, user, password]):
+        raise ValueError(
+            "Database credentials not found. "
+            "Create a .env file locally or add secrets on Streamlit Cloud."
+        )
+
     return create_engine(URL.create(
         drivername = "postgresql+psycopg2",
-        username   = os.getenv("DB_USER"),
-        password   = os.getenv("DB_PASSWORD"),
-        host       = os.getenv("DB_HOST"),
-        port       = int(os.getenv("DB_PORT")),
-        database   = os.getenv("DB_NAME"),
+        username   = user,
+        password   = password,
+        host       = host,
+        port       = int(port),
+        database   = name,
     ))
 
 
