@@ -1,0 +1,37 @@
+# ── Credentials — never push these ──
+.env
+*.env
+
+# ── Virtual environment ──
+venv/
+env/
+.venv/
+
+# ── Python compiled files ──
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+
+# ── Generated report outputs ──
+reports/*.xlsx
+reports/*.csv
+reports/~$*.xlsx
+
+# ── Jupyter notebooks (if any) ──
+.ipynb_checkpoints/
+*.ipynb
+
+# ── VS Code settings ──
+.vscode/
+
+# ── Windows system files ──
+Thumbs.db
+desktop.ini
+
+# ── Mac system files ──
+.DS_Store
+
+# ── Streamlit local config ──
+.streamlit/secrets.toml

@@ -1,0 +1,12 @@
+pandas==2.3.3
+prophet
+scikit-learn
+plotly
+streamlit
+psycopg2-binary
+sqlalchemy
+openpyxl
+scipy
+numpy
+python-dotenv
+faker
