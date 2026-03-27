@@ -11,7 +11,25 @@ from dotenv import load_dotenv
 # ── Load .env file into environment variables ─────────────────────────────────
 # This makes DB_HOST, OPENROUTER_API_KEY, etc. available via os.getenv()
 # load_dotenv() silently does nothing if .env doesn't exist (safe for cloud)
+# Load .env for local development
 load_dotenv()
+
+# Override with Streamlit Cloud secrets if available
+try:
+    import streamlit as st
+    if hasattr(st, "secrets"):
+        if "database" in st.secrets:
+            db = st.secrets["database"]
+            os.environ["DB_HOST"]     = db["DB_HOST"]
+            os.environ["DB_PORT"]     = str(db["DB_PORT"])
+            os.environ["DB_NAME"]     = db["DB_NAME"]
+            os.environ["DB_USER"]     = db["DB_USER"]
+            os.environ["DB_PASSWORD"] = db["DB_PASSWORD"]
+            os.environ["DB_SSLMODE"]  = db["DB_SSLMODE"]
+        if "openrouter" in st.secrets:
+            os.environ["OPENROUTER_API_KEY"] = st.secrets["openrouter"]["OPENROUTER_API_KEY"]
+except Exception:
+    pass
 
 # ── Project root — the folder this file lives in ─────────────────────────────
 # Path(__file__) is the path to config.py itself
