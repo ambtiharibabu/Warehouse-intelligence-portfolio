@@ -29,7 +29,7 @@ both powered by the same live PostgreSQL database.
 
 **Tech:** Python · PostgreSQL · Streamlit · Plotly · Power BI · pandas · openpyxl
 
-🌐 **Live Dashboard →** [hari-warehouse-kpi-p1.streamlit.app](https://hari-warehouse-kpi-p1.streamlit.app)
+🌐 **Live Dashboard →** [Streamlit App]](https://hari-warehouse-kpi-p1.streamlit.app)
 
 → __View Project 1 README__(project1-kpi-dashboard/README.md)
 
@@ -105,7 +105,7 @@ warehouse-intelligence-portfolio/
 
 ## Author
 
-**Hari Babu** — Supply Chain & Operations Professional
+**Haribabu Ambati** — Supply Chain & Operations Professional
 transitioning into data-driven operations roles.
 
 [GitHub](https://github.com/ambtiharibabu) ·
