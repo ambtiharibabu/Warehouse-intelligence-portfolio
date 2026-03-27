@@ -197,8 +197,6 @@ warehouse-intelligence-portfolio/
 
 ## Author
 
-<<<<<<< Updated upstream
 **Haribabu Ambati** — MSBA Student |Supply Chain & Operations expert and enthusiast | Supply Chain  · Python · ML · Data Engineering .
 
 [LinkedIn](https://www.linkedin.com/in/haribabuambati) · [GitHub](https://github.com/ambtiharibabu)
- Stashed changes
