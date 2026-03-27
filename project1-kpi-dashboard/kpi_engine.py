@@ -3,6 +3,10 @@
 # Calculates all 6 warehouse KPIs by querying PostgreSQL.
 # Each KPI is a standalone function returning a dict.
 # Called by dashboard.py and alerts.py
+#
+# Works in two environments:
+#   - Local: reads credentials from .env file
+#   - Streamlit Cloud: reads credentials from st.secrets
 # ============================================================
 
 import pandas as pd
@@ -11,19 +15,48 @@ from sqlalchemy.engine import URL
 from dotenv import load_dotenv
 import os
 
+# Load .env for local development — does nothing on Streamlit Cloud
 load_dotenv()
 
-# --- Reusable connection builder ---
-# Defined once here so every KPI function can call get_engine()
-# without repeating connection code
+# ============================================================
+# CREDENTIALS LOADER
+#
+# Reads from st.secrets first (Streamlit Cloud).
+# Falls back to os.getenv (local .env file).
+# Defined at module level so all functions can use it.
+# ============================================================
+def _get_secret(key, default=None):
+    try:
+        import streamlit as st
+        val = st.secrets.get(key, None)
+        if val is not None:
+            return str(val)
+    except Exception:
+        pass
+    return os.getenv(key, default)
+
+
+# ============================================================
+# CONNECTION BUILDER
+#
+# Called by every KPI function. Reads credentials fresh each
+# time so Streamlit Cloud secrets are always picked up.
+# Uses URL.create() to safely handle special chars in password.
+# ============================================================
 def get_engine():
+    host     = _get_secret("DB_HOST")
+    port     = _get_secret("DB_PORT", "5432")
+    name     = _get_secret("DB_NAME")
+    user     = _get_secret("DB_USER")
+    password = _get_secret("DB_PASSWORD")
+
     connection_url = URL.create(
         drivername = "postgresql+psycopg2",
-        username   = os.getenv("DB_USER"),
-        password   = os.getenv("DB_PASSWORD"),
-        host       = os.getenv("DB_HOST"),
-        port       = int(os.getenv("DB_PORT")),
-        database   = os.getenv("DB_NAME")
+        username   = user,
+        password   = password,
+        host       = host,
+        port       = int(port),
+        database   = name
     )
     return create_engine(connection_url)
 
@@ -141,8 +174,7 @@ def get_labor_productivity(start_date=None, end_date=None,
 # ============================================================
 # KPI 4: OSHA Incident Rate
 # Formula: (total incidents × 10,000) / total hours worked
-# Per 10,000 hours — appropriate scale for smaller workforces
-# and sub-annual reporting periods (vs 200K for enterprise annual)
+# Per 10,000 hours — appropriate for smaller workforces
 # Alert: >1.5 | Warning: >1.0
 # ============================================================
 def get_osha_rate(start_date=None, end_date=None, shift=None):
@@ -178,7 +210,6 @@ def get_osha_rate(start_date=None, end_date=None, shift=None):
     incidents   = inc_df["incident_count"][0]
     total_hours = hr_df["total_hours"][0]
 
-    # Per 10,000 hours — calibrated for our 30-associate, 90-day dataset
     osha_rate = round((incidents * 10000) / total_hours, 2) if total_hours > 0 else 0
 
     return {
@@ -228,7 +259,6 @@ def get_shipping_ontime(start_date=None, end_date=None):
 # ============================================================
 # KPI 6: Receiving Cycle Time
 # Formula: AVG(actual_time - scheduled_time) in hours
-# Using shipments table as proxy for receiving cycle time
 # Alert: >4 hrs | Warning: >3 hrs
 # ============================================================
 def get_receiving_cycle_time(start_date=None, end_date=None):
@@ -239,7 +269,6 @@ def get_receiving_cycle_time(start_date=None, end_date=None):
     if end_date:   filters.append(f"ship_date <= '{end_date}'")
     where = " AND ".join(filters)
 
-    # EPOCH converts the time difference to seconds; divide by 3600 for hours
     query = f"""
         SELECT
             AVG(EXTRACT(EPOCH FROM (actual_time - scheduled_time)) / 3600)
@@ -260,7 +289,6 @@ def get_receiving_cycle_time(start_date=None, end_date=None):
 
 # ============================================================
 # MASTER FUNCTION — returns all 6 KPIs in one call
-# dashboard.py will call this once per page load
 # ============================================================
 def get_all_kpis(start_date=None, end_date=None,
                  shift=None, department=None):
@@ -275,9 +303,7 @@ def get_all_kpis(start_date=None, end_date=None,
 
 
 # ============================================================
-# QUICK TEST — run this file directly to verify all KPIs work
-# This block only runs when you execute: python kpi_engine.py
-# It does NOT run when dashboard.py imports this file
+# QUICK TEST — run directly to verify all KPIs work
 # ============================================================
 if __name__ == "__main__":
     print("Running KPI Engine test...\n")
