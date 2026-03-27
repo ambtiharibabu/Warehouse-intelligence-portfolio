@@ -105,9 +105,7 @@ warehouse-intelligence-portfolio/
 
 ## Author
 
-**Haribabu Ambati** — Supply Chain & Operations Professional
-transitioning into data-driven operations roles.
+**Haribabu Ambati** — MSBA Student |Supply Chain & Operations expert and enthusiast | Supply Chain  · Python · ML · Data Engineering .
 
-[GitHub](https://github.com/ambtiharibabu) ·
-[LinkedIn](https://www.linkedin.com/in/haribabuambati)
+[LinkedIn](https://www.linkedin.com/in/haribabuambati) · [GitHub](https://github.com/ambtiharibabu)
 
