@@ -29,9 +29,9 @@ both powered by the same live PostgreSQL database.
 
 **Tech:** Python · PostgreSQL · Streamlit · Plotly · Power BI · pandas · openpyxl
 
-🌐 **Live Dashboard →** [Streamlit App]](https://hari-warehouse-kpi-p1.streamlit.app)
+🌐 **Live Dashboard →** [Streamlit App](https://hari-warehouse-kpi-p1.streamlit.app)
 
-→ __View Project 1 README__(project1-kpi-dashboard/README.md)
+→ [View Project 1 README](project1-kpi-dashboard/README.md)
 
 ---
 
