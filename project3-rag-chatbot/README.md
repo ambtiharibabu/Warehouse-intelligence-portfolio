@@ -9,8 +9,8 @@ live warehouse operational data from PostgreSQL, implements and benchmarks
 **7 prompting strategies**, and delivers plain-English answers with full 
 auditability of every source used — evaluated with RAGAS metrics.
 
-**🔴 Live App:** https://hari-warehouse-p3-ai.streamlit.app/  
-**📁 Portfolio:** https://github.com/ambtiharibabu/Warehouse-intelligence-portfolio
+**🔴 Live App:** [Streamlit App]https://hari-warehouse-p3-ai.streamlit.app/  
+**📁 Portfolio:** [Link]https://github.com/ambtiharibabu/Warehouse-intelligence-portfolio
 
 ---
 
