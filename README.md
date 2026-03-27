@@ -109,4 +109,5 @@ warehouse-intelligence-portfolio/
 transitioning into data-driven operations roles.
 
 [GitHub](https://github.com/ambtiharibabu) ·
-[LinkedIn](www.linkedin.com/in/haribabuambati)
+[LinkedIn](https://www.linkedin.com/in/haribabuambati)
+
