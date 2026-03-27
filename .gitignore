@@ -33,3 +33,6 @@ desktop.ini
 
 # ── Streamlit secrets ──
 **/.streamlit/secrets.toml
+# ChromaDB local vector store
+chroma_db/
+**/chroma_db/
