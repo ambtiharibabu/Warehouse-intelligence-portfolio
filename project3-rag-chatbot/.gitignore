@@ -1,0 +1,23 @@
+# Virtual environment — never commit (500MB+)
+venv/
+
+# Credentials — never commit
+.env
+
+# ChromaDB local database — large binary files, rebuilt by ingest.py
+chroma_db/
+
+# Auto-generated reports and exports
+reports/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+
+# VS Code settings
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db

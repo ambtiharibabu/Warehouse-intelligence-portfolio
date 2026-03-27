@@ -1,0 +1,29 @@
+# Database
+psycopg2-binary
+sqlalchemy
+python-dotenv
+
+# Data manipulation
+pandas
+tabulate
+
+# Embeddings (local, free — no API key)
+sentence-transformers
+
+# Vector database (local persistent)
+chromadb
+
+# LLM API (openai package works with OpenRouter's base_url)
+openai
+
+# RAG evaluation
+ragas
+datasets
+
+# Streamlit UI
+streamlit
+
+# LangChain (orchestration utilities)
+langchain
+langchain-community
+langchain-openai
