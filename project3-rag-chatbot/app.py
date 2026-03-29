@@ -11,13 +11,42 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import config
 
-# ── Page config ───────────────────────────────────────────────────────────────
+# ── Page config — MUST be first Streamlit call ────────────────────────────────
 st.set_page_config(
     page_title="Warehouse Intelligence Chatbot",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+# ── Auto-ingest on cold start ─────────────────────────────────────────────────
+# Streamlit Cloud wipes ephemeral storage on container recycle.
+# This rebuilds ChromaDB automatically if the collection is missing.
+
+def _ensure_chroma_ready():
+    import chromadb
+    try:
+        client = chromadb.PersistentClient(path=config.CHROMA_PATH)
+        client.get_collection(name=config.CHROMA_COLLECTION_NAME)
+        # Collection exists — nothing to do
+    except Exception:
+        # Collection missing — rebuild from PostgreSQL
+        with st.spinner(
+            "⏳ Building knowledge base from PostgreSQL... "
+            "This takes ~90 seconds on first load. Please wait."
+        ):
+            from pipeline.ingest import (
+                get_engine, load_all_tables,
+                build_all_chunks, embed_and_store
+            )
+            engine = get_engine()
+            tables = load_all_tables(engine)
+            chunks = build_all_chunks(tables)
+            embed_and_store(chunks)
+        st.success("✅ Knowledge base ready!")
+        st.rerun()
+
+_ensure_chroma_ready()
 
 # ── CSS ───────────────────────────────────────────────────────────────────────
 st.markdown("""
@@ -123,7 +152,6 @@ p, span, div, label, h1, h2, h3, h4, h5, h6,
     background-color: transparent !important;
 }
 
-/* ── Chat messages ── */
 [data-testid="stChatMessage"] {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border) !important;
@@ -138,7 +166,6 @@ p, span, div, label, h1, h2, h3, h4, h5, h6,
     color: var(--text-main) !important;
 }
 
-/* ── Chat avatar — remove label text, show only icon ── */
 [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-user"],
 [data-testid="stChatMessage"] [data-testid="chatAvatarIcon-assistant"] {
     font-size: 1.4em !important;
@@ -146,7 +173,6 @@ p, span, div, label, h1, h2, h3, h4, h5, h6,
     overflow: hidden !important;
 }
 
-/* ── Chat message content area ── */
 [data-testid="stChatMessageContent"] {
     overflow: hidden !important;
     word-wrap: break-word !important;
@@ -167,7 +193,6 @@ p, span, div, label, h1, h2, h3, h4, h5, h6,
     color: var(--text-dim) !important;
 }
 
-/* ── Expander ── */
 [data-testid="stExpander"] {
     background-color: var(--bg-panel) !important;
     border: 1px solid var(--border) !important;
@@ -237,7 +262,6 @@ p, span, div, label, h1, h2, h3, h4, h5, h6,
 hr { border-color: var(--border) !important; }
 [data-testid="stSpinner"] p { color: var(--amber) !important; }
 
-/* ── Metric badges ── */
 .metric-badge {
     display: inline-block;
     padding: 3px 12px;
@@ -254,7 +278,6 @@ hr { border-color: var(--border) !important; }
 .badge-red    { background: rgba(239,68,68,0.15);   color: #ef4444 !important; border: 1px solid rgba(239,68,68,0.3); }
 .badge-grey   { background: rgba(100,116,139,0.15); color: #94a3b8 !important; border: 1px solid rgba(100,116,139,0.3); }
 
-/* ── Main header ── */
 .main-header {
     background: linear-gradient(135deg, #0d1f35 0%, #0a1929 50%, #0d1f35 100%);
     border: 1px solid var(--border);
@@ -551,20 +574,17 @@ chat_tab, benchmark_tab = st.tabs(["💬  Chat", "📊  Benchmark Table"])
 # ── Chat tab ──────────────────────────────────────────────────────────────────
 with chat_tab:
 
-    # ── Render full conversation history ──────────────────────────────────────
     for msg in st.session_state.messages:
-
         if msg["role"] == "user":
             with st.chat_message("user", avatar="👤"):
                 st.markdown(msg["content"])
-
         else:
             with st.chat_message("assistant", avatar="🤖"):
                 st.markdown(msg["content"])
 
                 if "chunks" in msg:
-                    ragas   = msg.get("ragas", {})
-                    badges  = ""
+                    ragas  = msg.get("ragas", {})
+                    badges = ""
                     badges += metric_badge("Completeness", ragas.get("completeness"), (0.75, 0.5))
                     badges += metric_badge("Fairness",     ragas.get("fairness"),     (0.8,  0.6))
                     badges += '<span class="metric-badge badge-grey">Faithfulness: see Benchmark tab</span>'
@@ -591,16 +611,12 @@ with chat_tab:
                         f"{STRATEGIES[strategy_used]['label']}"
                     )
 
-    # ── Handle pending question (from sidebar buttons) ────────────────────────
-    # This runs AFTER history is rendered so new Q appears at the bottom
     if st.session_state.pending_question:
         question = st.session_state.pending_question
         st.session_state.pending_question = None
 
-        # Append user message
         st.session_state.messages.append({"role": "user", "content": question})
 
-        # Generate answer
         strategy_key = st.session_state.strategy
         with st.spinner(f"Thinking with {STRATEGIES[strategy_key]['label']}..."):
             try:
@@ -641,14 +657,10 @@ with chat_tab:
                     "content": f"Error: {str(e)}",
                 })
 
-        # Rerun so the new Q+A renders cleanly in the history loop above
         st.rerun()
 
-    # ── Chat input box ────────────────────────────────────────────────────────
     user_input = st.chat_input("Ask your warehouse data anything...")
-
     if user_input:
-        # Store question as pending, rerun → history renders it then generates
         st.session_state.pending_question = user_input
         st.rerun()
 
